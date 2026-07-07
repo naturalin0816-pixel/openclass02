@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>순창고등학교 공개수업 명부</title>
+<style>
+  :root{
+    --navy:#1c3b5a;
+    --navy-deep:#122a42;
+    --gold:#c9a24b;
+    --paper:#f7f5f0;
+    --ink:#233241;
+    --line:#dfd9c9;
+    --danger:#b3452e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Pretendard','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:32px 16px;
+  }
+  .sheet{
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:4px;
+    box-shadow:0 1px 3px rgba(18,42,66,0.08);
+    overflow:hidden;
+  }
+  .header{
+    background:var(--navy);
+    background-image:linear-gradient(135deg,var(--navy) 0%,var(--navy-deep) 100%);
+    color:#fff;
+    padding:28px 24px 22px;
+    position:relative;
+  }
+  .header::after{
+    content:"";
+    position:absolute;
+    left:0;bottom:0;
+    width:100%;
+    height:4px;
+    background:var(--gold);
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:2px;
+    color:var(--gold);
+    text-transform:uppercase;
+    margin:0 0 8px;
+  }
+  .title{
+    font-size:22px;
+    font-weight:700;
+    margin:0 0 10px;
+    line-height:1.35;
+  }
+  .datetime{
+    font-size:14px;
+    color:#e4e9ee;
+    margin:0;
+    padding-top:10px;
+    border-top:1px solid rgba(255,255,255,0.18);
+  }
+  form{
+    padding:26px 24px 30px;
+  }
+  .field{
+    margin-bottom:20px;
+  }
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--navy);
+    margin-bottom:8px;
+  }
+  input[type="text"]{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid #cfd6dd;
+    border-radius:3px;
+    font-size:15px;
+    color:var(--ink);
+    background:#fbfbf9;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  input[type="text"]:focus{
+    outline:none;
+    border-color:var(--navy);
+    box-shadow:0 0 0 3px rgba(28,59,90,0.12);
+  }
+  .radio-group{
+    display:flex;
+    gap:10px;
+  }
+  .radio-option{
+    flex:1;
+    position:relative;
+  }
+  .radio-option input{
+    position:absolute;
+    opacity:0;
+    width:100%;
+    height:100%;
+    margin:0;
+    cursor:pointer;
+  }
+  .radio-option span{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:12px 10px;
+    border:1px solid #cfd6dd;
+    border-radius:3px;
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    background:#fbfbf9;
+    transition:all .15s;
+  }
+  .radio-option input:checked + span{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:#fff;
+  }
+  .radio-option input:focus-visible + span{
+    box-shadow:0 0 0 3px rgba(28,59,90,0.25);
+  }
+  .hint{
+    font-size:12px;
+    color:#8a8f95;
+    margin-top:6px;
+  }
+  button.submit{
+    width:100%;
+    padding:14px;
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    border-radius:3px;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.3px;
+    cursor:pointer;
+    margin-top:6px;
+    transition:background .15s;
+  }
+  button.submit:hover{background:var(--navy-deep);}
+  button.submit:disabled{
+    background:#a9b3bd;
+    cursor:not-allowed;
+  }
+  .error-msg{
+    color:var(--danger);
+    font-size:13px;
+    margin-top:4px;
+    display:none;
+  }
+  .field.invalid input[type="text"]{border-color:var(--danger);}
+  .field.invalid .error-msg{display:block;}
+
+  .sig-wrap{
+    border:1px solid #cfd6dd;
+    border-radius:3px;
+    background:#fbfbf9;
+    touch-action:none;
+  }
+  #sigPad{
+    display:block;
+    width:100%;
+    height:160px;
+    cursor:crosshair;
+    border-radius:3px;
+  }
+  .field.invalid .sig-wrap{border-color:var(--danger);}
+  .sig-actions{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top:8px;
+  }
+  .sig-btn{
+    background:#fff;
+    border:1px solid #cfd6dd;
+    color:var(--navy);
+    font-size:12px;
+    font-weight:600;
+    padding:6px 12px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .sig-btn:hover{background:#f1f2f0;}
+
+  /* overlay */
+  .overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(18,29,40,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:16px;
+  }
+  .overlay.show{display:flex;}
+  .toast{
+    background:#fff;
+    border-radius:6px;
+    padding:36px 32px;
+    text-align:center;
+    max-width:320px;
+    width:100%;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    animation:pop .25s ease;
+  }
+  @keyframes pop{
+    from{opacity:0;transform:scale(.92);}
+    to{opacity:1;transform:scale(1);}
+  }
+  .toast .icon{
+    width:52px;height:52px;
+    border-radius:50%;
+    background:var(--navy);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 16px;
+    font-size:26px;
+  }
+  .toast h2{
+    margin:0 0 6px;
+    font-size:18px;
+    color:var(--navy);
+  }
+  .toast p{
+    margin:0 0 22px;
+    font-size:13px;
+    color:#666;
+  }
+  .toast button{
+    background:var(--navy);
+    color:#fff;
+    border:none;
+    padding:10px 24px;
+    border-radius:3px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .toast.error .icon{background:var(--danger);}
+  .toast.error h2{color:var(--danger);}
+
+  @media (max-width:400px){
+    .title{font-size:19px;}
+    .header{padding:22px 18px 18px;}
+    form{padding:22px 18px 26px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="header">
+    <p class="eyebrow">공개수업 참관 신청</p>
+    <h1 class="title">순창고등학교 공개수업 명부</h1>
+    <p class="datetime">일시: 7월 9일 4교시</p>
+  </div>
+
+  <form id="registerForm" novalidate>
+    <div class="field" id="field-school">
+      <label for="school">학교명</label>
+      <input type="text" id="school" name="school" placeholder="예: 순창고등학교" autocomplete="off">
+      <p class="error-msg">학교명을 입력해 주세요.</p>
+    </div>
+
+    <div class="field" id="field-subject">
+      <label for="subject">담당 과목</label>
+      <input type="text" id="subject" name="subject" placeholder="예: 국어" autocomplete="off">
+      <p class="error-msg">담당 과목을 입력해 주세요.</p>
+    </div>
+
+    <div class="field" id="field-class">
+      <label>참여 과목</label>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="targetClass" value="문학">
+          <span>문학</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="targetClass" value="공통수학">
+          <span>공통수학</span>
+        </label>
+      </div>
+      <p class="error-msg">참여 과목을 선택해 주세요.</p>
+    </div>
+
+    <div class="field" id="field-name">
+      <label for="name">이름</label>
+      <input type="text" id="name" name="name" placeholder="예: 홍길동" autocomplete="off">
+      <p class="error-msg">이름을 입력해 주세요.</p>
+    </div>
+
+    <div class="field" id="field-signature">
+      <label>서명</label>
+      <div class="sig-wrap">
+        <canvas id="sigPad"></canvas>
+      </div>
+      <div class="sig-actions">
+        <button type="button" id="sigClear" class="sig-btn">다시 쓰기</button>
+        <span class="hint">위 칸에 직접 서명해 주세요.</span>
+      </div>
+      <p class="error-msg">서명을 입력해 주세요.</p>
+    </div>
+
+    <button type="submit" class="submit" id="submitBtn">제출</button>
+  </form>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="toast" id="toast">
+    <div class="icon" id="toastIcon">✓</div>
+    <h2 id="toastTitle">제출되었습니다</h2>
+    <p id="toastDesc">명부에 정상적으로 기록되었습니다.</p>
+    <button id="toastClose">확인</button>
+  </div>
+</div>
+
+<script>
+// ==========================================================
+// 배포한 Google Apps Script 웹앱 URL
+// ==========================================================
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyEWBEVrJXzeg_ozRHBW0dhl_-PUxB6q7QTvMeIQ1FxPkFLB0RNlzuFTgP6t6xFNJBu/exec";
+
+const form = document.getElementById('registerForm');
+const overlay = document.getElementById('overlay');
+const toast = document.getElementById('toast');
+const toastIcon = document.getElementById('toastIcon');
+const toastTitle = document.getElementById('toastTitle');
+const toastDesc = document.getElementById('toastDesc');
+const submitBtn = document.getElementById('submitBtn');
+
+// ---------- 서명 캔버스 ----------
+const canvas = document.getElementById('sigPad');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+let hasSignature = false;
+
+function resizeCanvas(){
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const prevData = hasSignature ? canvas.toDataURL() : null;
+  canvas.width = rect.width * ratio;
+  canvas.height = 160 * ratio;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '160px';
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.scale(ratio, ratio);
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#1c3b5a';
+  if(prevData){
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, rect.width, 160);
+    img.src = prevData;
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function getPos(e){
+  const rect = canvas.getBoundingClientRect();
+  if(e.touches && e.touches.length){
+    return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+  }
+  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+}
+
+function startDraw(e){
+  drawing = true;
+  hasSignature = true;
+  const pos = getPos(e);
+  ctx.beginPath();
+  ctx.moveTo(pos.x, pos.y);
+  e.preventDefault();
+}
+function moveDraw(e){
+  if(!drawing) return;
+  const pos = getPos(e);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+  e.preventDefault();
+}
+function endDraw(){
+  drawing = false;
+}
+
+canvas.addEventListener('mousedown', startDraw);
+canvas.addEventListener('mousemove', moveDraw);
+window.addEventListener('mouseup', endDraw);
+canvas.addEventListener('touchstart', startDraw, { passive:false });
+canvas.addEventListener('touchmove', moveDraw, { passive:false });
+canvas.addEventListener('touchend', endDraw);
+
+document.getElementById('sigClear').addEventListener('click', () => {
+  const rect = canvas.getBoundingClientRect();
+  ctx.clearRect(0, 0, rect.width, 160);
+  hasSignature = false;
+  setInvalid('field-signature', false);
+});
+// ---------- 서명 캔버스 끝 ----------
+
+function setInvalid(fieldId, invalid){
+  const el = document.getElementById(fieldId);
+  el.classList.toggle('invalid', invalid);
+}
+
+function showToast(success){
+  if(success){
+    toast.classList.remove('error');
+    toastIcon.textContent = '✓';
+    toastTitle.textContent = '제출되었습니다';
+    toastDesc.textContent = '명부에 정상적으로 기록되었습니다.';
+  } else {
+    toast.classList.add('error');
+    toastIcon.textContent = '!';
+    toastTitle.textContent = '제출에 실패했습니다';
+    toastDesc.textContent = '잠시 후 다시 시도해 주세요.';
+  }
+  overlay.classList.add('show');
+}
+
+document.getElementById('toastClose').addEventListener('click', () => {
+  overlay.classList.remove('show');
+});
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const school = document.getElementById('school').value.trim();
+  const subject = document.getElementById('subject').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const targetClassEl = document.querySelector('input[name="targetClass"]:checked');
+  const targetClass = targetClassEl ? targetClassEl.value : '';
+
+  let valid = true;
+  setInvalid('field-school', !school); if(!school) valid = false;
+  setInvalid('field-subject', !subject); if(!subject) valid = false;
+  setInvalid('field-class', !targetClass); if(!targetClass) valid = false;
+  setInvalid('field-name', !name); if(!name) valid = false;
+  setInvalid('field-signature', !hasSignature); if(!hasSignature) valid = false;
+
+  if(!valid) return;
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = '제출 중...';
+
+  const signatureData = canvas.toDataURL('image/png');
+
+  const payload = new URLSearchParams({
+    school: school,
+    subject: subject,
+    targetClass: targetClass,
+    name: name,
+    signature: signatureData
+  });
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: payload
+  })
+  .then(res => res.json())
+  .then(data => {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '제출';
+    if(data.result === 'success'){
+      form.reset();
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, 160);
+      hasSignature = false;
+      showToast(true);
+    } else {
+      showToast(false);
+    }
+  })
+  .catch(function(){
+    submitBtn.disabled = false;
+    submitBtn.textContent = '제출';
+    showToast(false);
+  });
+});
+</script>
+
+</body>
+</html>
